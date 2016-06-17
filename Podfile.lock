@@ -22,22 +22,22 @@ PODS:
     - CocoaLumberjack/Core
   - CocoaLumberjack/Extensions (2.3.0):
     - CocoaLumberjack/Default
-  - CustomControl (0.0.8):
-    - CustomControl/additions (= 0.0.8)
-    - CustomControl/control (= 0.0.8)
-    - CustomControl/flatbuffers (= 0.0.8)
-  - CustomControl/additions (0.0.8):
-    - CustomControl/control
-    - CustomControl/flatbuffers
-  - CustomControl/control (0.0.8):
+  - deigo (0.0.1):
+    - deigo/additions (= 0.0.1)
+    - deigo/control (= 0.0.1)
+    - deigo/flatbuffers (= 0.0.1)
+  - deigo/additions (0.0.1):
+    - deigo/control
+    - deigo/flatbuffers
+  - deigo/control (0.0.1):
     - AFNetworking (~> 3.1.0)
-    - CustomControl/flatbuffers
+    - deigo/flatbuffers
     - MQTTClient (~> 0.7.4)
     - Realm (= 1.0.0)
     - UICKeyChainStore (~> 2.1.0)
     - XRSA (~> 1.1.1)
     - YYCache (~> 1.0.3)
-  - CustomControl/flatbuffers (0.0.8):
+  - deigo/flatbuffers (0.0.1):
     - FlatBuffers-ObjC (~> 0.0.1)
   - FlatBuffers-ObjC (0.0.2)
   - MQTTClient (0.7.8):
@@ -52,12 +52,12 @@ PODS:
   - YYCache (1.0.3)
 
 DEPENDENCIES:
-  - CustomControl (~> 0.0.1)
+  - deigo (~> 0.0.1)
 
 SPEC CHECKSUMS:
   AFNetworking: 5e0e199f73d8626b11e79750991f5d173d1f8b67
   CocoaLumberjack: 97fab7ee5f507fe54445cca7ea80f926729cfd15
-  CustomControl: a932dfa46ff7605200fa53416d4b4e73b527e0ed
+  deigo: ea019f96e5081d85d77fc45c54f888e084d1f362
   FlatBuffers-ObjC: 0d13dbb9ff0e19567ea107b1ee3687340ce1c8b2
   MQTTClient: be89741654eccf5a57eb62f4ef0fd57e0e19aa17
   Realm: e15cd8e7c11d3e576f628ba0b7cb855269b4991c

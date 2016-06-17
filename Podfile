@@ -11,7 +11,7 @@ target 'deigo' do
 	#pod 'UICKeyChainStore', '~> 2.1.0'
 	#pod 'YYCache', '~> 1.0.3'
 	#pod 'XRSA', '~> 1.1.1'
-	pod 'CustomControl', '~> 0.0.1'
+	pod 'deigo', '~> 0.0.1'
 end
 
 target 'deigoTests' do

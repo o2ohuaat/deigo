@@ -56,7 +56,7 @@ SCDG_IMPLEMENT_SINGLETON()
 }
 
 - (void)startupWithHost:(NSString *)host port:(NSInteger)port clientId:(NSString *)clientId user:(NSString *)user pass:(NSString*)pass {
-
+    
     if (!self.manager) {
         self.manager = [[MQTTSessionManager alloc] init];
         self.manager.delegate = self;
@@ -66,25 +66,25 @@ SCDG_IMPLEMENT_SINGLETON()
                                        };
         [self.manager connectTo:[SCDGUtils isValidStr:host] ? host : kHost
                            port: port >= 0 ? port : kPort
-                                    tls:_enableTLS
-                              keepalive:60
-                                  clean:NO
-                                   auth:YES
-                                   user:user
-                                   pass:pass
-                              willTopic:kTopic
-                                   will:[@"offline" dataUsingEncoding:NSUTF8StringEncoding]
-                                willQos:MQTTQosLevelExactlyOnce
-                         willRetainFlag:FALSE
-                           withClientId:[SCDGUtils isValidStr:clientId] ? clientId : [SCDGUtils getUUID]];
-//        MQTTSSLSecurityPolicy *securityPolicy = [MQTTSSLSecurityPolicy policyWithPinningMode:MQTTSSLPinningModeCertificate];
-//        securityPolicy.allowInvalidCertificates = YES;
-//        securityPolicy.validatesCertificateChain = NO;
-//        securityPolicy.pinnedCertificates = [self defaultPinnedCertificates];
-//        [self.manager connectTo:[SCDGUtils isValidStr:host] ? host : kHost
-//                           port:kPortTLS
-//                            tls:YES
-//                      keepalive:60 clean:NO auth:NO user:nil pass:nil will:NO willTopic:nil willMsg:nil willQos:MQTTQosLevelExactlyOnce willRetainFlag:NO withClientId:[SCDGUtils isValidStr:clientId] ? clientId : kClientID securityPolicy:securityPolicy certificates:[self defaultPinnedCertificates]];
+                            tls:_enableTLS
+                      keepalive:60
+                          clean:NO
+                           auth:YES
+                           user:user
+                           pass:pass
+                      willTopic:kTopic
+                           will:[@"offline" dataUsingEncoding:NSUTF8StringEncoding]
+                        willQos:MQTTQosLevelExactlyOnce
+                 willRetainFlag:FALSE
+                   withClientId:[SCDGUtils isValidStr:clientId] ? clientId : [SCDGUtils getUUID]];
+        //        MQTTSSLSecurityPolicy *securityPolicy = [MQTTSSLSecurityPolicy policyWithPinningMode:MQTTSSLPinningModeCertificate];
+        //        securityPolicy.allowInvalidCertificates = YES;
+        //        securityPolicy.validatesCertificateChain = NO;
+        //        securityPolicy.pinnedCertificates = [self defaultPinnedCertificates];
+        //        [self.manager connectTo:[SCDGUtils isValidStr:host] ? host : kHost
+        //                           port:kPortTLS
+        //                            tls:YES
+        //                      keepalive:60 clean:NO auth:NO user:nil pass:nil will:NO willTopic:nil willMsg:nil willQos:MQTTQosLevelExactlyOnce willRetainFlag:NO withClientId:[SCDGUtils isValidStr:clientId] ? clientId : kClientID securityPolicy:securityPolicy certificates:[self defaultPinnedCertificates]];
     } else {
         [self.manager connectToLast];
     }
@@ -120,7 +120,7 @@ SCDG_IMPLEMENT_SINGLETON()
     }
     
     NSMutableDictionary *subscriptions = [NSMutableDictionary dictionaryWithDictionary:self.manager.subscriptions];
-        
+    
     [subscriptions setObject:[NSNumber numberWithInt:MQTTQosLevelExactlyOnce] forKey:topic];
     
     self.manager.subscriptions = subscriptions;
@@ -153,7 +153,7 @@ SCDG_IMPLEMENT_SINGLETON()
     [self unsubscribeTopic:self.privateTopic];
     [self unsubscribeTopic:self.upTopic];
     [self.manager disconnect];
-
+    
 }
 
 #pragma mark - m
@@ -181,6 +181,10 @@ SCDG_IMPLEMENT_SINGLETON()
                     
                     [cache cacheExecCommand:data commandId:message.messageId];
                     
+                    [cache cacheUncompletedCommand:data commandId:message.messageId];
+                    
+                    [self sendMessageReceivedWithParams:@{@"mid":[NSString stringWithFormat:@"%llu", message.messageId]} callback:nil];
+                    
                     [[SCDGConfigs sharedInstance] addOrUpdateControlInfo:message callback:^{
                         
                         [[NSNotificationCenter defaultCenter] postNotificationName:[SCDGUtils remoteControlNotifactionNameWith:message.acceptorId] object:message];
@@ -194,14 +198,14 @@ SCDG_IMPLEMENT_SINGLETON()
                     
                 }else if ([cache isCachedUncompletedCommand:message.messageId]){
                     
-//                    [self sendMessageReceivedToUpTopic:[NSString stringWithFormat:@"%llu", message.messageId] callback:nil];
+                    //                    [self sendMessageReceivedToUpTopic:[NSString stringWithFormat:@"%llu", message.messageId] callback:nil];
                     [self sendMessageReceivedWithParams:@{@"mid":[NSString stringWithFormat:@"%llu", message.messageId]} callback:nil];
                     
                 }
             }
         }
     }
-
+    
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -211,7 +215,7 @@ SCDG_IMPLEMENT_SINGLETON()
         case MQTTSessionManagerStateClosing:
             break;
         case MQTTSessionManagerStateConnected:
-            
+            [self requestOfflineMessageWithParams:nil callback:nil];
             break;
         case MQTTSessionManagerStateConnecting:
             break;
@@ -293,12 +297,12 @@ SCDG_IMPLEMENT_SINGLETON()
             MsgMqttServer *info = [MsgMqttServer getRootAs:(NSData*)data];
             
             
-//            uint64_t  host = info.host;
-//            unsigned long int ip = ntohl(host);
-//            in_addr subnetIp;
-//            subnetIp.s_addr = ip & 0xffffffff;
+            //            uint64_t  host = info.host;
+            //            unsigned long int ip = ntohl(host);
+            //            in_addr subnetIp;
+            //            subnetIp.s_addr = ip & 0xffffffff;
             
-//            NSString *ipAddr = [NSString stringWithUTF8String:inet_ntoa(subnetIp)];
+            //            NSString *ipAddr = [NSString stringWithUTF8String:inet_ntoa(subnetIp)];
             NSString *ipAddr = info.host;
             uint32_t  port = info.port;
             NSString *user = info.auth.user;
@@ -333,7 +337,7 @@ SCDG_IMPLEMENT_SINGLETON()
                 }
             }
         }
-
+        
         
     } failure:^(NSError *error) {
         
@@ -355,7 +359,7 @@ SCDG_IMPLEMENT_SINGLETON()
         
         if ([FBTable verifier:(NSData*)data]) {
             
-//            MsgResponseBody *response = [MsgResponseBody getRootAs:(NSData*)data];
+            //            MsgResponseBody *response = [MsgResponseBody getRootAs:(NSData*)data];
             
         }
         

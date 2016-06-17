@@ -11,10 +11,13 @@ Pod::Spec.new do |s|
  
   pch_AF = <<-EOS
 #ifdef __OBJC__
+
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#endif
 
+#define SC_TP_UICKEYCHAINSTORE
+
+#endif
 EOS
   s.prefix_header_contents = pch_AF
   s.requires_arc = true
