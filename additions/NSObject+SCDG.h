@@ -13,11 +13,13 @@
 
 @property (nonatomic, assign)uint32_t acceptorId;
 
-- (NSArray<MsgMessageContent *> *)getControlInfos:(SCDGControlType)type;
+@property (nonatomic, strong)NSMutableArray<MsgMessageContent *> *controlMessages;
 
-- (NSArray<MsgMessageContent *> *)getControlInfos;
+- (NSMutableArray<MsgMessageContent *> *)getControlInfos:(SCDGControlType)type;
 
-- (NSArray<MsgMessageContent *> *)getAllSubControlInfos;
+- (NSMutableArray<MsgMessageContent *> *)getControlInfos;
+
+- (NSMutableArray<MsgMessageContent *> *)getAllSubControlInfos;
 
 // should invoke in dealloc method
 - (void)unsubscribeRemoteControl;

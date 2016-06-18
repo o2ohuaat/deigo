@@ -30,7 +30,7 @@ using namespace Msg::Mqtt;
 #define kPort   1883
 #define kPortTLS   8883
 #define kTopic  @"/MQTTKit/example"
-#define kTopic2 @"/MQTTKit/test"
+//#define kTopic2 @"/MQTTKit/test"
 #define kClientID @"3190C243-F0DB-4264-80C1-4997102D7AD9"
 
 #ifdef MQTTKIT
@@ -62,32 +62,37 @@ SCDG_IMPLEMENT_SINGLETON()
         self.manager.delegate = self;
         self.manager.subscriptions = @{
                                        kTopic : [NSNumber numberWithInt:MQTTQosLevelExactlyOnce],
-                                       kTopic2 : [NSNumber numberWithInt:MQTTQosLevelExactlyOnce],
+//                                       kTopic2 : [NSNumber numberWithInt:MQTTQosLevelExactlyOnce],
                                        };
-        [self.manager connectTo:[SCDGUtils isValidStr:host] ? host : kHost
-                           port: port >= 0 ? port : kPort
-                            tls:_enableTLS
-                      keepalive:60
-                          clean:NO
-                           auth:YES
-                           user:user
-                           pass:pass
-                      willTopic:kTopic
-                           will:[@"offline" dataUsingEncoding:NSUTF8StringEncoding]
-                        willQos:MQTTQosLevelExactlyOnce
-                 willRetainFlag:FALSE
-                   withClientId:[SCDGUtils isValidStr:clientId] ? clientId : [SCDGUtils getUUID]];
-        //        MQTTSSLSecurityPolicy *securityPolicy = [MQTTSSLSecurityPolicy policyWithPinningMode:MQTTSSLPinningModeCertificate];
-        //        securityPolicy.allowInvalidCertificates = YES;
-        //        securityPolicy.validatesCertificateChain = NO;
-        //        securityPolicy.pinnedCertificates = [self defaultPinnedCertificates];
-        //        [self.manager connectTo:[SCDGUtils isValidStr:host] ? host : kHost
-        //                           port:kPortTLS
-        //                            tls:YES
-        //                      keepalive:60 clean:NO auth:NO user:nil pass:nil will:NO willTopic:nil willMsg:nil willQos:MQTTQosLevelExactlyOnce willRetainFlag:NO withClientId:[SCDGUtils isValidStr:clientId] ? clientId : kClientID securityPolicy:securityPolicy certificates:[self defaultPinnedCertificates]];
-    } else {
-        [self.manager connectToLast];
+        
     }
+    
+    [self subscribeTopic:self.topic];
+    [self subscribeTopic:self.privateTopic];
+    [self subscribeTopic:self.upTopic];
+    
+    [self.manager connectTo:[SCDGUtils isValidStr:host] ? host : kHost
+                       port: port >= 0 ? port : kPort
+                        tls:_enableTLS
+                  keepalive:60
+                      clean:YES
+                       auth:YES
+                       user:user
+                       pass:pass
+                  willTopic:kTopic
+                       will:[@"offline" dataUsingEncoding:NSUTF8StringEncoding]
+                    willQos:MQTTQosLevelExactlyOnce
+             willRetainFlag:FALSE
+               withClientId:[SCDGUtils isValidStr:clientId] ? clientId : [SCDGUtils getUUID]];
+    //        MQTTSSLSecurityPolicy *securityPolicy = [MQTTSSLSecurityPolicy policyWithPinningMode:MQTTSSLPinningModeCertificate];
+    //        securityPolicy.allowInvalidCertificates = YES;
+    //        securityPolicy.validatesCertificateChain = NO;
+    //        securityPolicy.pinnedCertificates = [self defaultPinnedCertificates];
+    //        [self.manager connectTo:[SCDGUtils isValidStr:host] ? host : kHost
+    //                           port:kPortTLS
+    //                            tls:YES
+    //                      keepalive:60 clean:NO auth:NO user:nil pass:nil will:NO willTopic:nil willMsg:nil willQos:MQTTQosLevelExactlyOnce willRetainFlag:NO withClientId:[SCDGUtils isValidStr:clientId] ? clientId : kClientID securityPolicy:securityPolicy certificates:[self defaultPinnedCertificates]];
+    
     /*
      * MQTTCLient: observe the MQTTSessionManager's state to display the connection status
      */
@@ -175,26 +180,32 @@ SCDG_IMPLEMENT_SINGLETON()
             MsgMessageContent *message = [MsgMessageContent getRootAs:data];
             
             SCDGCache *cache = [SCDGCache sharedInstance];
-            if (message.messageId && [[SCDGUtils getCurrentVersionShort] compare:message.version options:NSNumericSearch] == 0) {
+            if (message.messageId && ([[SCDGUtils getCurrentVersionShort] compare:message.version options:NSNumericSearch] == 0)) {
                 
                 if (![cache isCachedExecCommand:message.messageId]) {
                     
-                    [cache cacheExecCommand:data commandId:message.messageId];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:[SCDGUtils remoteControlNotifactionNameWith:message.acceptorId] object:message];
                     
-                    [cache cacheUncompletedCommand:data commandId:message.messageId];
-                    
-                    [self sendMessageReceivedWithParams:@{@"mid":[NSString stringWithFormat:@"%llu", message.messageId]} callback:nil];
-                    
-                    [[SCDGConfigs sharedInstance] addOrUpdateControlInfo:message callback:^{
+                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
                         
-                        [[NSNotificationCenter defaultCenter] postNotificationName:[SCDGUtils remoteControlNotifactionNameWith:message.acceptorId] object:message];
+                        [cache cacheExecCommand:data commandId:message.messageId];
+                        
+                        [cache cacheUncompletedCommand:data commandId:message.messageId];
+                        
+                        [self sendMessageReceivedWithParams:@{@"mid":[NSString stringWithFormat:@"%llu", message.messageId]} callback:nil];
+                        
+                        [[SCDGConfigs sharedInstance] addOrUpdateControlInfo:message callback:^{
+                            
+                            //                            [[NSNotificationCenter defaultCenter] postNotificationName:[SCDGUtils remoteControlNotifactionNameWith:message.acceptorId] object:message];
+                            
+                        }];
                         
                         if (_handleMessage){
                             
                             _handleMessage(message, topic, retained);
                             
                         }
-                    }];
+                    });
                     
                 }else if ([cache isCachedUncompletedCommand:message.messageId]){
                     
@@ -216,6 +227,7 @@ SCDG_IMPLEMENT_SINGLETON()
             break;
         case MQTTSessionManagerStateConnected:
             [self requestOfflineMessageWithParams:nil callback:nil];
+            
             break;
         case MQTTSessionManagerStateConnecting:
             break;
@@ -265,7 +277,7 @@ SCDG_IMPLEMENT_SINGLETON()
 }
 
 - (void)loginWithParams:(NSDictionary *)params callback:(void(^)(BOOL isSuccessed, id data))callback{
-    
+
     __weak SCDGRemoteControl *wself = self;
     [SCDGHttpTool getWithURL:[NSString stringWithFormat:@"%@%@", _httpUrlPrefix ? _httpUrlPrefix : SCDG_BASEURL, SCDG_LOGIN_URL] params:params success:^(NSDictionary *data) {
         
@@ -296,13 +308,6 @@ SCDG_IMPLEMENT_SINGLETON()
             
             MsgMqttServer *info = [MsgMqttServer getRootAs:(NSData*)data];
             
-            
-            //            uint64_t  host = info.host;
-            //            unsigned long int ip = ntohl(host);
-            //            in_addr subnetIp;
-            //            subnetIp.s_addr = ip & 0xffffffff;
-            
-            //            NSString *ipAddr = [NSString stringWithUTF8String:inet_ntoa(subnetIp)];
             NSString *ipAddr = info.host;
             uint32_t  port = info.port;
             NSString *user = info.auth.user;
@@ -325,10 +330,8 @@ SCDG_IMPLEMENT_SINGLETON()
             if (info.enable_mqtt == 1) {
                 
                 wself.enableTLS = info.enable_tls;
+                
                 [wself startupWithHost:ipAddr port:port clientId:self.clientId user:user pass:pass];
-                [wself subscribeTopic:self.topic];
-                [wself subscribeTopic:self.privateTopic];
-                [wself subscribeTopic:self.upTopic];
                 
                 if (callback){
                     

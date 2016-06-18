@@ -121,12 +121,14 @@ ZrR6lNqTzqF+OVj9RQIDAQAB\
     
     [self.view addSubview:btn];
     
-    SCDGLabel *label = [[SCDGLabel alloc]initWithFrame:CGRectMake([UIScreen mainScreen].bounds.size.width/2-100, 400, 200, 40)];
-    label.textColor = [UIColor blackColor];
-    label.text = @"old";
+    SCDGButton *label = [[SCDGButton alloc]initWithFrame:CGRectMake([UIScreen mainScreen].bounds.size.width/2-100, 400, 200, 40)];
+//    label.textColor = [UIColor blackColor];
+//    label.text = @"old";
     label.tag = 0x10001;
-    label.textAlignment = NSTextAlignmentCenter;
+    [label setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+//    label.textAlignment = NSTextAlignmentCenter;
     [self.view addSubview:label];
+    [label addTarget:self action:@selector(test:) forControlEvents:UIControlEventTouchUpInside];
     
 //    MsgMessageContent *message = [MsgMessageContent new];
 //    message.messageId = 11111111;
@@ -159,7 +161,8 @@ ZrR6lNqTzqF+OVj9RQIDAQAB\
 //        [[NSNotificationCenter defaultCenter] postNotificationName:[SCDGUtils remoteControlNotifactionNameWith:message.acceptorId] object:message];
 //    }];
 }
-
+static NSData *data1;
+static NSData *data2;
 - (void)publishMsg{
     
 //    [[SCDGRemoteControl sharedInstance] sendMessageReceivedWithParams:@{@"mid" : @"111"} callback:^(BOOL isSuccessed, NSString *mid) {
@@ -173,15 +176,41 @@ ZrR6lNqTzqF+OVj9RQIDAQAB\
 //    
 //    return;
     static int count = 0;
-    MsgMessageContent *message = [MsgMessageContent new];
-    message.messageId = [SCDGUtils getNonce].integerValue;
-    message.platform = 1;
-    message.version = @"1.4";
-    message.type = 3;
-    message.action = 2;
-    message.acceptorId = 0x10001;
-    message.payload = [NSString stringWithFormat:@"hello deigo %d",count++];
-    [[SCDGRemoteControl sharedInstance] publish:[SCDGRemoteControl sharedInstance].topic data:[message getData]];
+    count++;
+    if (!data1) {
+        
+        MsgMessageContent *message = [MsgMessageContent new];
+        message.messageId = [SCDGUtils getNonce].integerValue;
+        message.platform = 1;
+//        message.version = @"1.4";
+//        message.type = 3;
+//        message.action = 2;
+        message.version = @"1.0";
+        message.type = 3;
+        message.action = 2;
+        message.acceptorId = 0x10001;
+        message.payload = [NSString stringWithFormat:@"hello deigo %d",count++];
+        data1 = [message getData];
+        message = [MsgMessageContent new];
+        message.messageId = [SCDGUtils getNonce].integerValue;
+        message.platform = 1;
+//        message.version = @"1.4";
+//        message.type = 3;
+//        message.action = 2;
+        message.version = @"1.0";
+        message.type = 3;
+        message.action = 2;
+        message.acceptorId = 0x10001;
+        message.payload = [NSString stringWithFormat:@"hello deigo %d",count++];
+        data2 = [message getData];
+    }
+    [[SCDGRemoteControl sharedInstance] publish:[SCDGRemoteControl sharedInstance].topic data:count%2?data1:data2];
+    
+}
+
+- (void)test:(id)btn{
+    
+    NSLog(@"hello");
     
 }
 

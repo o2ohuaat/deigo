@@ -18,7 +18,19 @@
 
 - (NSString *)primaryId {
     
-    return [NSString stringWithFormat:@"%03d%03d%010d", self.type, self.action, self.acceptorId];
+    NSString *tempId = nil;
+    
+    switch (_type) {
+        case SCDGControlTypeEnable:
+            tempId = [NSString stringWithFormat:@"%03d000%010d", self.type, self.acceptorId];
+            break;
+            
+        default:
+            tempId = [NSString stringWithFormat:@"%03d%03d%010d", self.type, self.action, self.acceptorId];
+            break;
+    }
+    
+    return tempId;
     
 }
 

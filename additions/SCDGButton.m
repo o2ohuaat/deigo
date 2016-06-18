@@ -13,7 +13,7 @@
 - (instancetype)init{
     
     if (self = [super init]) {
-        ;
+        
     }
     
     return self;
@@ -22,7 +22,7 @@
 -(instancetype)initWithFrame:(CGRect)frame{
     
     if (self = [super initWithFrame:frame]) {
-        ;
+        
     }
     
     return self;
@@ -39,11 +39,39 @@
     return self;
 }
 
+- (void)customInit{
+    
+    self.controlMessages = [self getControlInfos];
+    
+}
+
 - (void)setTag:(NSInteger)tag{
     
     [super setTag:tag];
     
     self.acceptorId = (uint32_t)tag;
+    
+}
+
+- (void)setAcceptorId:(uint32_t)acceptorId{
+    
+    [super setAcceptorId:acceptorId];
+    
+    [self customInit];
+    
+}
+
+- (void)drawRect:(CGRect)rect{
+    
+    
+    if (self.acceptorId) {
+        
+        [self drawByControlInfo];
+        
+    }
+    
+    [super drawRect:rect];
+    
     
 }
 
@@ -59,13 +87,25 @@
     
 }
 
-- (void)layoutByControlInfo{
+- (void)drawByControlInfo{
     
-    NSArray<MsgMessageContent *> * puppies = [self getControlInfos];
+    NSMutableArray<MsgMessageContent *> * puppies = self.controlMessages;
     
     for (MsgMessageContent *controlInfo in puppies) {
         
         [self changeByControlInfo:controlInfo];
+        
+    }
+    
+}
+
+- (void)layoutByControlInfo{
+    
+    NSMutableArray<MsgMessageContent *> * puppies = self.controlMessages;
+    
+    for (MsgMessageContent *controlInfo in puppies) {
+        
+        [self changeLayoutByControlInfo:controlInfo];
         
     }
     
@@ -107,9 +147,42 @@
     }
 }
 
+- (void)changeLayoutByControlInfo:(MsgMessageContent*)controlInfo{
+    
+    if (controlInfo.type == SCDGControlTypeChangeUI) {
+        
+        switch (controlInfo.action) {
+                
+            case SCDGActionTypeBackgroundColor:
+                
+                if (controlInfo.payload && [SCDGUtils isValidStr:controlInfo.payload] && controlInfo.payload.length == 6) {
+                    self.backgroundColor = [SCDGUtils getColor:controlInfo.payload];
+                }
+                
+                break;
+                
+            default:
+                break;
+        }
+        
+    }else if (controlInfo.type == SCDGControlTypeEnable){
+        
+        self.userInteractionEnabled = controlInfo.action;
+        
+    }
+}
+
 - (void)handleControlWith:(MsgMessageContent *)message{
     
-    [self changeByControlInfo:message];
+    __weak SCDGButton *wself = self;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        [wself.controlMessages addObject:message];
+        
+        [wself changeByControlInfo:message];
+        
+    });
     
 }
 

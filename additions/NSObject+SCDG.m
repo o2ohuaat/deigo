@@ -10,7 +10,7 @@
 #import <objc/runtime.h>
 
 static void *NSObjectSCDGAcceptorIdKey = &NSObjectSCDGAcceptorIdKey;
-
+static void *NSObjectSCDGControlMessagesKey = &NSObjectSCDGControlMessagesKey;
 @implementation NSObject (SCDG)
 
 - (uint32_t)acceptorId
@@ -33,20 +33,34 @@ static void *NSObjectSCDGAcceptorIdKey = &NSObjectSCDGAcceptorIdKey;
     [self subscribeRemoteControlWithId:self.acceptorId];
 }
 
+- (NSMutableArray<MsgMessageContent*>*)controlMessages{
+    
+    NSMutableArray<MsgMessageContent*> *temp = objc_getAssociatedObject(self, NSObjectSCDGControlMessagesKey);
+    
+    return [SCDGUtils isValidArray:temp] ? temp : [NSMutableArray new];
+    
+}
 
-- (NSArray<MsgMessageContent *> *)getControlInfos:(SCDGControlType)type{
+-(void)setControlMessages:(NSMutableArray<MsgMessageContent *> *)controlMessages{
+    
+    
+    objc_setAssociatedObject(self, NSObjectSCDGControlMessagesKey, controlMessages, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+}
+
+- (NSMutableArray<MsgMessageContent *> *)getControlInfos:(SCDGControlType)type{
     
     return [[SCDGConfigs sharedInstance] getControlInfos:self.acceptorId type:type];
     
 }
 
-- (NSArray<MsgMessageContent *> *)getControlInfos{
+- (NSMutableArray<MsgMessageContent *> *)getControlInfos{
     
     return [[SCDGConfigs sharedInstance] getControlInfos:self.acceptorId];
     
 }
 
-- (NSArray<MsgMessageContent *> *)getAllSubControlInfos{
+- (NSMutableArray<MsgMessageContent *> *)getAllSubControlInfos{
     
     return [[SCDGConfigs sharedInstance] getAllSubControlInfos:self.acceptorId];
     

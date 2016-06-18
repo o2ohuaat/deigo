@@ -88,6 +88,7 @@ SCDG_IMPLEMENT_SINGLETON()
     SCDGControlInfo *info = [self controlInfoFrom:message];
     __weak SCDGConfigs *wself = self;
     dispatch_async(dispatch_queue_create("background", 0), ^{
+//    dispatch_async(dispatch_get_main_queue(), ^{
         
         RLMRealm *wrealm = [RLMRealm realmWithURL:wself.realmFilePath];
         
@@ -102,7 +103,7 @@ SCDG_IMPLEMENT_SINGLETON()
     
 }
 
-- (NSArray<MsgMessageContent *> *)getControlInfos:(uint32_t)acceptorId type:(uint8_t)type{
+- (NSMutableArray<MsgMessageContent *> *)getControlInfos:(uint32_t)acceptorId type:(uint8_t)type{
     RLMRealm *wrealm = [RLMRealm realmWithURL:self.realmFilePath];
     RLMResults<SCDGControlInfo *> *puppies = [SCDGControlInfo objectsInRealm:wrealm where:[NSString stringWithFormat:@"type = %d AND acceptorId = %d", (int)type, (int)acceptorId]];
     NSMutableArray <MsgMessageContent *> *infoArray = [NSMutableArray new];
@@ -110,10 +111,10 @@ SCDG_IMPLEMENT_SINGLETON()
         [infoArray addObject:[self messageFrom:[puppies objectAtIndex:i]]];
     }
     
-    return (NSArray<MsgMessageContent*>*)infoArray;
+    return infoArray;
 }
 
-- (NSArray<MsgMessageContent *> *)getControlInfos:(uint32_t)acceptorId{
+- (NSMutableArray<MsgMessageContent *> *)getControlInfos:(uint32_t)acceptorId{
     
     RLMRealm *wrealm = [RLMRealm realmWithURL:self.realmFilePath];
     
@@ -125,10 +126,10 @@ SCDG_IMPLEMENT_SINGLETON()
         [infoArray addObject:[self messageFrom:[puppies objectAtIndex:i]]];
     }
     
-    return (NSArray<MsgMessageContent*>*)infoArray;
+    return infoArray;
 }
 
-- (NSArray<MsgMessageContent *> *)getAllSubControlInfos:(uint32_t)acceptorId{
+- (NSMutableArray<MsgMessageContent *> *)getAllSubControlInfos:(uint32_t)acceptorId{
     
     uint32_t maskMIN = acceptorId & 0xffff0000;
     
@@ -144,7 +145,7 @@ SCDG_IMPLEMENT_SINGLETON()
         [infoArray addObject:[self messageFrom:[puppies objectAtIndex:i]]];
     }
     
-    return (NSArray<MsgMessageContent*>*)infoArray;
+    return infoArray;
 }
 
 @end
