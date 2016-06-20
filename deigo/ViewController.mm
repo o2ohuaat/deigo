@@ -177,34 +177,34 @@ static NSData *data2;
 //    return;
     static int count = 0;
     count++;
-    if (!data1) {
-        
+//    if (!data1) {
+    
         MsgMessageContent *message = [MsgMessageContent new];
         message.messageId = [SCDGUtils getNonce].integerValue;
         message.platform = 1;
-//        message.version = @"1.4";
-//        message.type = 3;
-//        message.action = 2;
-        message.version = @"1.0";
+        message.version = @"1.4";
         message.type = 3;
         message.action = 2;
+//        message.version = @"1.0";
+//        message.type = 3;
+//        message.action = 2;
         message.acceptorId = 0x10001;
         message.payload = [NSString stringWithFormat:@"hello deigo %d",count++];
         data1 = [message getData];
-        message = [MsgMessageContent new];
-        message.messageId = [SCDGUtils getNonce].integerValue;
-        message.platform = 1;
+//        message = [MsgMessageContent new];
+//        message.messageId = [SCDGUtils getNonce].integerValue;
+//        message.platform = 1;
 //        message.version = @"1.4";
 //        message.type = 3;
 //        message.action = 2;
-        message.version = @"1.0";
-        message.type = 3;
-        message.action = 2;
-        message.acceptorId = 0x10001;
-        message.payload = [NSString stringWithFormat:@"hello deigo %d",count++];
-        data2 = [message getData];
-    }
-    [[SCDGRemoteControl sharedInstance] publish:[SCDGRemoteControl sharedInstance].topic data:count%2?data1:data2];
+////        message.version = @"1.0";
+////        message.type = 3;
+////        message.action = 2;
+//        message.acceptorId = 0x10001;
+//        message.payload = [NSString stringWithFormat:@"hello deigo %d",count++];
+//        data2 = [message getData];
+//    }
+    [[SCDGRemoteControl sharedInstance] publish:[SCDGRemoteControl sharedInstance].topic data:data1];
     
 }
 
